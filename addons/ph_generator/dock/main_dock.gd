@@ -148,8 +148,6 @@ func _build_ui() -> void:
 	_status_label.size_flags_vertical = SIZE_EXPAND_FILL
 	vbox.add_child(_status_label)
 
-	_update_dimensions_from_selection()
-
 
 func _make_spinbox(label: String, default_val: float, step_val: float, max_val: float):
 	var row = HBoxContainer.new()

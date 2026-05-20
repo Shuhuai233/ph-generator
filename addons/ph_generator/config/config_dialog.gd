@@ -23,7 +23,7 @@ func setup(cm) -> void:
 func _populate_form() -> void:
 	title = "PH Generator 设置"
 	ok_button_text = "保存"
-	cancel_button_text = "取消"
+	add_cancel_button("取消")
 	size = Vector2(550, 400)
 
 	var vbox = VBoxContainer.new()
