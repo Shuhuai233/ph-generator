@@ -1,5 +1,5 @@
 @tool
-class_name config_manager
+class_name ConfigManager
 extends RefCounted
 
 const CONFIG_PATH = "user://ph_generator_config.cfg"

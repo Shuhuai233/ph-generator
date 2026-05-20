@@ -1,5 +1,5 @@
 @tool
-class_name fbx_converter
+class_name FBXConverter
 extends RefCounted
 
 var _config

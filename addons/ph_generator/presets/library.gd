@@ -1,5 +1,5 @@
 @tool
-class_name preset_library
+class_name PresetLibrary
 extends RefCounted
 
 const PRESETS = {

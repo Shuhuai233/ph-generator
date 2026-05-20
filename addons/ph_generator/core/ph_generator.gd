@@ -1,5 +1,5 @@
 @tool
-class_name ph_generator
+class_name PHGenerator
 extends RefCounted
 
 const SceneBuilder = preload("res://addons/ph_generator/core/scene_builder.gd")

@@ -1,5 +1,5 @@
 @tool
-class_name main_dock
+class_name MainDock
 extends Control
 
 const PresetLib = preload("res://addons/ph_generator/presets/library.gd")
@@ -166,9 +166,10 @@ func _make_spinbox(label: String, default_val: float, step_val: float, max_val: 
 	return row
 
 
-func _separator() -> HSeparator:
-	var sep = HSeparator.new()
-	sep.custom_minimum_size = Vector2(0, 4)
+func _separator() -> Control:
+	var sep = ColorRect.new()
+	sep.color = Color(0.5, 0.5, 0.5, 0.3)
+	sep.custom_minimum_size = Vector2(0, 2)
 	return sep
 
 

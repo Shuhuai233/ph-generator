@@ -1,5 +1,5 @@
 @tool
-class_name gltf_exporter
+class_name GLTFExporter
 extends RefCounted
 
 var _config

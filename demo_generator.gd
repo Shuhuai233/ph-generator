@@ -40,7 +40,7 @@ func _run() -> void:
 		var scaled = PresetLib._scale_preset(preset, example.dims, example.key)
 
 		var node_name = "PH_" + example.desc
-		var ph = sb.build_ph_root(scaled, scene_root, node_name)
+		var ph = await sb.build_ph_root(scaled, scene_root, node_name)
 		if ph:
 			ph.owner = scene_root
 			ph.position.x = x_offset

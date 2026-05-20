@@ -1,5 +1,5 @@
 @tool
-class_name mesh_builder
+class_name MeshBuilder
 extends RefCounted
 
 static func build_mesh(primitive: Dictionary) -> ArrayMesh:

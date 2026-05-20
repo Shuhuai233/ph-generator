@@ -1,5 +1,5 @@
 @tool
-class_name parser
+class_name Parser
 extends RefCounted
 
 static func parse_response(content: String) -> Dictionary:

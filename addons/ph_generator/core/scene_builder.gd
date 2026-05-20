@@ -1,5 +1,5 @@
 @tool
-class_name scene_builder
+class_name SceneBuilder
 extends RefCounted
 
 const MeshBuilder = preload("res://addons/ph_generator/core/mesh_builder.gd")

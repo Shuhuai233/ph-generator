@@ -1,5 +1,5 @@
 @tool
-class_name prompt_mgr
+class_name PromptMgr
 extends RefCounted
 
 const SYSTEM_PROMPT = """你是一个3D占位模型（Placeholder）生成器。
@@ -124,6 +124,7 @@ static func build_messages(user_prompt: String) -> Array:
 		messages.append({"role": "user", "content": example["input"]})
 		messages.append({"role": "assistant", "content": JSON.stringify(example["output"])})
 
+	messages.append({"role": "user", "content": user_prompt})
 	return messages
 
 

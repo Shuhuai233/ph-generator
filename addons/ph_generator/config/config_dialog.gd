@@ -1,5 +1,5 @@
 @tool
-class_name config_dialog
+class_name ConfigDialog
 extends AcceptDialog
 
 signal settings_saved()
