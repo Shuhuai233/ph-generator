@@ -9,9 +9,9 @@ var _generator
 var _config
 var _current_ph_node: Node3D = null
 var _description_input: TextEdit
-var _dims_w: SpinBox
-var _dims_h: SpinBox
-var _dims_d: SpinBox
+var _dim_w
+var _dim_h
+var _dim_d
 var _auto_select_box: CheckBox
 var _json_display: TextEdit
 var _status_label: RichTextLabel
@@ -21,7 +21,7 @@ var _export_fbx_btn: Button
 var _preset_dropdown: OptionButton
 
 
-func setup(generator: ph_generator) -> void:
+func setup(generator) -> void:
 	_generator = generator
 	_config = generator.get_config()
 	_generator.status_update.connect(_on_status)
@@ -46,14 +46,12 @@ func _build_ui() -> void:
 	vbox.size_flags_horizontal = SIZE_EXPAND_FILL
 	scroll.add_child(vbox)
 
-	# Title
 	var title = Label.new()
 	title.text = "PH Generator"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 16)
 	vbox.add_child(title)
 
-	# Settings button
 	var settings_btn = Button.new()
 	settings_btn.text = "⚙ 设置 (API Key)"
 	settings_btn.pressed.connect(_open_settings)
@@ -62,7 +60,6 @@ func _build_ui() -> void:
 
 	vbox.add_child(_separator())
 
-	# Preset dropdown
 	var preset_label = Label.new()
 	preset_label.text = "快速模板:"
 	vbox.add_child(preset_label)
@@ -77,7 +74,6 @@ func _build_ui() -> void:
 
 	vbox.add_child(_separator())
 
-	# Description input
 	var desc_label = Label.new()
 	desc_label.text = "物件描述 (自然语言):"
 	vbox.add_child(desc_label)
@@ -89,28 +85,25 @@ func _build_ui() -> void:
 	_description_input.size_flags_horizontal = SIZE_EXPAND_FILL
 	vbox.add_child(_description_input)
 
-	# Dimensions
 	var dims_label = Label.new()
 	dims_label.text = "尺寸 (X=长, Y=高, Z=深):"
 	vbox.add_child(dims_label)
 
 	var dims_row = HBoxContainer.new()
-	_dims_w = _make_spinbox("X", 1.0, 0.01, 100.0)
-	_dims_h = _make_spinbox("Y", 1.0, 0.01, 100.0)
-	_dims_d = _make_spinbox("Z", 1.0, 0.01, 100.0)
-	dims_row.add_child(_dims_w)
-	dims_row.add_child(_dims_h)
-	dims_row.add_child(_dims_d)
+	_dim_w = _make_spinbox("X", 1.0, 0.01, 100.0)
+	_dim_h = _make_spinbox("Y", 1.0, 0.01, 100.0)
+	_dim_d = _make_spinbox("Z", 1.0, 0.01, 100.0)
+	dims_row.add_child(_dim_w)
+	dims_row.add_child(_dim_h)
+	dims_row.add_child(_dim_d)
 	vbox.add_child(dims_row)
 
-	# Auto-select from scene
 	_auto_select_box = CheckBox.new()
 	_auto_select_box.text = "从选中节点读取尺寸"
 	_auto_select_box.button_pressed = _config.auto_select_whitebox
 	_auto_select_box.toggled.connect(_on_auto_select_toggled)
 	vbox.add_child(_auto_select_box)
 
-	# Generate button
 	_generate_btn = Button.new()
 	_generate_btn.text = "AI 生成 PH"
 	_generate_btn.size_flags_horizontal = SIZE_EXPAND_FILL
@@ -120,7 +113,6 @@ func _build_ui() -> void:
 
 	vbox.add_child(_separator())
 
-	# JSON display
 	var json_label = Label.new()
 	json_label.text = "LLM 解析结果 (可编辑):"
 	vbox.add_child(json_label)
@@ -132,7 +124,6 @@ func _build_ui() -> void:
 	_json_display.size_flags_horizontal = SIZE_EXPAND_FILL
 	vbox.add_child(_json_display)
 
-	# Export buttons
 	var export_row = HBoxContainer.new()
 	_export_glb_btn = Button.new()
 	_export_glb_btn.text = "导出 .glb"
@@ -150,7 +141,6 @@ func _build_ui() -> void:
 
 	vbox.add_child(_separator())
 
-	# Status
 	_status_label = RichTextLabel.new()
 	_status_label.custom_minimum_size = Vector2(0, 80)
 	_status_label.bbcode_enabled = true
@@ -161,7 +151,7 @@ func _build_ui() -> void:
 	_update_dimensions_from_selection()
 
 
-func _make_spinbox(label: String, default_val: float, step_val: float, max_val: float) -> HBoxContainer:
+func _make_spinbox(label: String, default_val: float, step_val: float, max_val: float):
 	var row = HBoxContainer.new()
 	var lbl = Label.new()
 	lbl.text = label + ": "
@@ -209,16 +199,16 @@ func _update_dimensions_from_selection() -> void:
 		return
 	var info = _generator.get_selected_node_bbox()
 	var dims = info.get("dimensions", Vector3(1, 1, 1))
-	_dims_w.get_child(1).value = dims.x
-	_dims_h.get_child(1).value = dims.y
-	_dims_d.get_child(1).value = dims.z
+	_dim_w.get_child(1).value = dims.x
+	_dim_h.get_child(1).value = dims.y
+	_dim_d.get_child(1).value = dims.z
 
 
 func _get_dimensions_vector() -> Vector3:
 	return Vector3(
-		_dims_w.get_child(1).value,
-		_dims_h.get_child(1).value,
-		_dims_d.get_child(1).value
+		_dim_w.get_child(1).value,
+		_dim_h.get_child(1).value,
+		_dim_d.get_child(1).value
 	)
 
 

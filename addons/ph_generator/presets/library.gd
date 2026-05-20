@@ -179,6 +179,8 @@ static func _scale_preset(preset: Dictionary, target_dims: Vector3, _type_name: 
 static func _approx_bbox(primitives: Array) -> Vector3:
 	var maxp = Vector3.ONE * 0.001
 	for p in primitives:
+		if not p is Dictionary:
+			continue
 		var s = _get_size(p)
 		var pos = Vector3.ZERO
 		if p.has("position"):

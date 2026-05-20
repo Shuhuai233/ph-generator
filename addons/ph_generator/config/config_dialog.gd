@@ -30,12 +30,15 @@ func _populate_form() -> void:
 	vbox.add_theme_constant_override("separation", 8)
 
 	vbox.add_child(_make_section("LLM API 配置"))
-	vbox.add_child(_make_row("Endpoint:", _endpoint_input = LineEdit.new()))
+	_endpoint_input = LineEdit.new()
+	vbox.add_child(_make_row("Endpoint:", _endpoint_input))
 	_endpoint_input.placeholder_text = "https://api.openai.com/v1/chat/completions"
-	vbox.add_child(_make_row("API Key:", _key_input = LineEdit.new()))
+	_key_input = LineEdit.new()
+	vbox.add_child(_make_row("API Key:", _key_input))
 	_key_input.secret = true
 	_key_input.placeholder_text = "sk-..."
-	vbox.add_child(_make_row("Model:", _model_input = LineEdit.new()))
+	_model_input = LineEdit.new()
+	vbox.add_child(_make_row("Model:", _model_input))
 	_model_input.placeholder_text = "gpt-4o"
 
 	var model_hint = Label.new()
@@ -59,7 +62,8 @@ func _populate_form() -> void:
 	_fbx_check = CheckBox.new()
 	_fbx_check.text = "自动导出 FBX（需 Python 环境）"
 	vbox.add_child(_fbx_check)
-	vbox.add_child(_make_row("导出目录:", _export_dir_input = LineEdit.new()))
+	_export_dir_input = LineEdit.new()
+	vbox.add_child(_make_row("导出目录:", _export_dir_input))
 	_export_dir_input.text = "res://exports"
 
 	add_child(vbox)

@@ -6,7 +6,7 @@ static func parse_response(content: String) -> Dictionary:
 	var json = JSON.parse_string(content)
 	if json == null:
 		push_error("Failed to parse JSON from LLM response")
-		return {}
+		return _try_deep_search(content)
 
 	if json is Dictionary:
 		if json.has("primitives"):

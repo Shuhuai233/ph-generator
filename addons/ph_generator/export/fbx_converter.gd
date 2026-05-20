@@ -17,8 +17,13 @@ func convert_glb_to_fbx(glb_path: String) -> String:
 
 	var fbx_path = glb_path.replace(".glb", ".fbx")
 
+	var py_cmd = _find_python()
+	if py_cmd.is_empty():
+		push_error("Python 未安装或不在 PATH 中")
+		return ""
+
 	var output = []
-	var exit_code = OS.execute("python3", [script_path, glb_path, fbx_path], output, true)
+	var exit_code = OS.execute(py_cmd, [script_path, glb_path, fbx_path], output, true)
 	if exit_code != 0:
 		var err = "".join(output)
 		push_error("FBX 转换失败 (exit " + str(exit_code) + "): " + err)
@@ -28,9 +33,16 @@ func convert_glb_to_fbx(glb_path: String) -> String:
 
 
 func is_python_available() -> bool:
+	return not _find_python().is_empty()
+
+
+func _find_python() -> String:
 	var output = []
-	var ec = OS.execute("python3", ["--version"], output, true)
-	return ec == 0
+	if OS.execute("python3", ["--version"], output, true) == 0:
+		return "python3"
+	if OS.execute("python", ["--version"], output, true) == 0:
+		return "python"
+	return ""
 
 
 func _get_script_path() -> String:
