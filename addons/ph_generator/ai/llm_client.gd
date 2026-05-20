@@ -11,7 +11,7 @@ signal error_occurred(message: String)
 var _config
 
 
-func set_config(cm: config_manager) -> void:
+func set_config(cm) -> void:
 	_config = cm
 	timeout = 60
 

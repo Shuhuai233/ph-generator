@@ -4,7 +4,7 @@ extends AcceptDialog
 
 signal settings_saved()
 
-var _config: config_manager
+var _config
 
 var _endpoint_input: LineEdit
 var _key_input: LineEdit
@@ -14,7 +14,7 @@ var _fbx_check: CheckBox
 var _export_dir_input: LineEdit
 
 
-func setup(cm: config_manager) -> void:
+func setup(cm) -> void:
 	_config = cm
 	_populate_form()
 	_load_values()
