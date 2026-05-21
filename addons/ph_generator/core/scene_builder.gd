@@ -127,3 +127,70 @@ func _create_collision_body(parsed: Dictionary) -> StaticBody3D:
 		sb.add_child(cs)
 
 	return sb
+
+
+func build_ph_root_merged(parsed: Dictionary, scene_root: Node, ph_name: String = "PH_Generated") -> Node3D:
+	var existing = scene_root.get_node_or_null(ph_name)
+	if existing:
+		for child in existing.get_children():
+			child.queue_free()
+		existing.queue_free()
+		await Engine.get_main_loop().process_frame
+
+	var root = Node3D.new()
+	root.name = ph_name
+
+	var desc = parsed.get("description", "PH")
+	var label = Label3D.new()
+	label.name = "Label"
+	label.text = desc
+	label.font_size = 32
+	label.modulate = Color.WHITE
+	label.position = Vector3(0, 2.5, 0)
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.pixel_size = 0.01
+	root.add_child(label)
+
+	# Single merged mesh instance
+	var merged_mesh = MeshBuilder.build_merged_mesh(parsed)
+	if merged_mesh != null:
+		var mi = MeshInstance3D.new()
+		mi.name = "MergedMesh"
+		mi.mesh = merged_mesh
+
+		var mat = StandardMaterial3D.new()
+		mat.albedo_color = Color(0.70, 0.70, 0.72)
+		mat.roughness = 0.8
+		mat.metallic = 0.05
+		mi.set_surface_override_material(0, mat)
+		root.add_child(mi)
+
+		# Collision from merged mesh AABB
+		var sb = StaticBody3D.new()
+		sb.name = "CollisionBody"
+		var cs = CollisionShape3D.new()
+		cs.name = "CollisionShape"
+
+		# Try convex hull first, fall back to box from AABB
+		var convex_shape := merged_mesh.create_convex_shape(true, true) as Shape3D
+		if convex_shape:
+			cs.shape = convex_shape
+		else:
+			var aabb = merged_mesh.get_aabb()
+			var box_shape := BoxShape3D.new()
+			box_shape.size = aabb.size
+			cs.shape = box_shape
+			# Offset the collision shape to center of AABB
+			cs.position = aabb.get_center()
+
+		sb.add_child(cs)
+		root.add_child(sb)
+
+	root.owner = scene_root
+	for child in root.get_children():
+		child.owner = scene_root
+		for grandchild in child.get_children():
+			grandchild.owner = scene_root
+
+	scene_root.add_child(root)
+	return root

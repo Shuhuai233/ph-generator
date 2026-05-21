@@ -18,6 +18,7 @@ func _initialize() -> void:
 		"res://addons/ph_generator/config/config_manager.gd",
 		"res://addons/ph_generator/config/config_dialog.gd",
 		"res://addons/ph_generator/presets/library.gd",
+		"res://build_gym.gd",
 	]
 
 	var failed = 0

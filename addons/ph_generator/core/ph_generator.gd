@@ -23,6 +23,8 @@ var _editor_plugin: EditorPlugin
 var _pending_description: String
 var _pending_dimensions: Vector3
 
+var merged_mode: bool = false
+
 
 func setup(editor_plugin: EditorPlugin) -> void:
 	_editor_plugin = editor_plugin
@@ -92,7 +94,11 @@ func _build_and_place(parsed: Dictionary) -> void:
 		scn.take_over_path("res://main_scene.tscn")
 		scene_root = root
 
-	var ph_node = _scene_builder.build_ph_root(parsed, scene_root, "PH_" + parsed.get("description", "Generated"))
+	var ph_node: Node3D
+	if merged_mode:
+		ph_node = _scene_builder.build_ph_root_merged(parsed, scene_root, "PH_" + parsed.get("description", "Generated"))
+	else:
+		ph_node = _scene_builder.build_ph_root(parsed, scene_root, "PH_" + parsed.get("description", "Generated"))
 	if ph_node == null:
 		status_update.emit("构建 PH 节点失败")
 		return

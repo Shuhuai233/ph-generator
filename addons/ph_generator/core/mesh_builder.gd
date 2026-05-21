@@ -229,6 +229,68 @@ static func spherical(origin: Vector3, radius: float, phi: float, theta: float) 
 	)
 
 
+static func build_merged_mesh(parsed: Dictionary) -> ArrayMesh:
+	var st = SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+
+	var primitives = parsed.get("primitives", [])
+	for primitive in primitives:
+		var mesh = build_mesh(primitive)
+		if mesh == null:
+			continue
+
+		var arrays = mesh.surface_get_arrays(0)
+		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		var indices_raw = arrays[Mesh.ARRAY_INDEX]
+		var indices: PackedInt32Array = indices_raw if indices_raw != null else PackedInt32Array()
+
+		if vertices.size() == 0:
+			continue
+
+		# Get position offset and rotation for this primitive
+		var offset := Vector3.ZERO
+		if primitive.has("position"):
+			var pos = primitive["position"]
+			if pos is Vector3:
+				offset = pos
+			elif pos is Array and pos.size() >= 3:
+				offset = Vector3(float(pos[0]), float(pos[1]), float(pos[2]))
+
+		var rot: Basis = Basis.IDENTITY
+		if primitive.has("rotation"):
+			var r = primitive["rotation"]
+			if r is Vector3:
+				rot = Basis.from_euler(Vector3(deg_to_rad(r.x), deg_to_rad(r.y), deg_to_rad(r.z)))
+			elif r is Basis:
+				rot = r
+
+		# Transform all vertices
+		var transformed := PackedVector3Array()
+		for v in vertices:
+			transformed.append(rot * v + offset)
+
+		# Add triangles using indices (or sequential if no indices)
+		if indices.size() > 0:
+			for i in range(0, indices.size(), 3):
+				var idx0 = indices[i]
+				var idx1 = indices[i + 1]
+				var idx2 = indices[i + 2]
+				if idx0 < transformed.size() and idx1 < transformed.size() and idx2 < transformed.size():
+					st.add_vertex(transformed[idx0])
+					st.add_vertex(transformed[idx1])
+					st.add_vertex(transformed[idx2])
+		else:
+			# No indices, vertices are already in triangle order (each 3 vertices = 1 triangle)
+			for i in range(0, transformed.size(), 3):
+				if i + 2 < transformed.size():
+					st.add_vertex(transformed[i])
+					st.add_vertex(transformed[i + 1])
+					st.add_vertex(transformed[i + 2])
+
+	st.generate_normals()
+	return st.commit()
+
+
 static func _get_vec3_size(data: Dictionary) -> Vector3:
 	var raw = data.get("size", Vector3(1, 1, 1))
 	if raw is Vector3:

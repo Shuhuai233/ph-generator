@@ -19,6 +19,7 @@ var _generate_btn: Button
 var _export_glb_btn: Button
 var _export_fbx_btn: Button
 var _preset_dropdown: OptionButton
+var _merged_mode_box: CheckBox
 
 
 func setup(generator) -> void:
@@ -111,6 +112,12 @@ func _build_ui() -> void:
 	_generate_btn.pressed.connect(_on_generate_pressed)
 	vbox.add_child(_generate_btn)
 
+	_merged_mode_box = CheckBox.new()
+	_merged_mode_box.text = "合并模式 (单一体白模)"
+	_merged_mode_box.button_pressed = false
+	_merged_mode_box.toggled.connect(_on_merged_mode_toggled)
+	vbox.add_child(_merged_mode_box)
+
 	vbox.add_child(_separator())
 
 	var json_label = Label.new()
@@ -191,6 +198,11 @@ func _on_auto_select_toggled(pressed: bool) -> void:
 	_config.auto_select_whitebox = pressed
 	if pressed:
 		_update_dimensions_from_selection()
+
+
+func _on_merged_mode_toggled(pressed: bool) -> void:
+	if _generator:
+		_generator.merged_mode = pressed
 
 
 func _update_dimensions_from_selection() -> void:
