@@ -1,5 +1,4 @@
 @tool
-class_name PromptMgr
 extends RefCounted
 
 const SYSTEM_PROMPT = """你是一个3D占位模型（Placeholder）生成器。

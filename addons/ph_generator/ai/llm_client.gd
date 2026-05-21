@@ -1,5 +1,4 @@
 @tool
-class_name LLMClient
 extends HTTPRequest
 
 const PromptMgr = preload("res://addons/ph_generator/ai/prompt_mgr.gd")

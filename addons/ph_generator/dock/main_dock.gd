@@ -1,5 +1,4 @@
 @tool
-class_name MainDock
 extends Control
 
 const PresetLib = preload("res://addons/ph_generator/presets/library.gd")

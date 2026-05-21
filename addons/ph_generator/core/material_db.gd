@@ -1,5 +1,4 @@
 @tool
-class_name MaterialDB
 extends RefCounted
 
 const DEFAULT_COLORS = {
