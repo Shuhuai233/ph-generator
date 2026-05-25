@@ -1,6 +1,10 @@
 @tool
 extends EditorPlugin
 
+# ── Preload the core scripts ─────────────────────────────────────────
+# If ANY of these fail, the plugin silently won't load.
+# Check the Godot Output panel for "[PH Generator]" messages.
+
 const MainDock = preload("res://addons/ph_generator/dock/main_dock.gd")
 const PHGenerator = preload("res://addons/ph_generator/core/ph_generator.gd")
 
@@ -8,22 +12,55 @@ var _dock: Control = null
 var _generator = null
 
 
+func _init() -> void:
+	print("[PH Generator] _init() — script instance created")
+
+
 func _enter_tree() -> void:
-	print("[PH Generator] _enter_tree START")
+	print("[PH Generator] _enter_tree() START")
+
+	# Step 1: Create the core generator
+	var step := 1
+	print("[PH Generator]   step %d: creating PHGenerator..." % step)
 	_generator = PHGenerator.new()
-	print("[PH Generator] generator created")
+	if _generator == null:
+		push_error("[PH Generator]   step %d: FAILED to create PHGenerator!" % step)
+		return
+	print("[PH Generator]   step %d: OK" % step)
+	step += 1
+
+	# Step 2: Set up the generator
+	print("[PH Generator]   step %d: calling generator.setup()..." % step)
 	_generator.setup(self)
-	print("[PH Generator] generator setup done")
+	print("[PH Generator]   step %d: OK" % step)
+	step += 1
 
+	# Step 3: Create the dock
+	print("[PH Generator]   step %d: creating MainDock..." % step)
 	_dock = MainDock.new()
-	print("[PH Generator] dock created")
-	_dock.setup(_generator)
-	print("[PH Generator] dock setup done")
-	add_control_to_dock(DOCK_SLOT_RIGHT_UR, _dock)
-	print("[PH Generator] dock added to editor")
+	if _dock == null:
+		push_error("[PH Generator]   step %d: FAILED to create MainDock!" % step)
+		return
+	print("[PH Generator]   step %d: OK" % step)
+	step += 1
 
+	# Step 4: Set up the dock
+	print("[PH Generator]   step %d: calling dock.setup()..." % step)
+	_dock.setup(_generator)
+	print("[PH Generator]   step %d: OK" % step)
+	step += 1
+
+	# Step 5: Add dock to editor
+	print("[PH Generator]   step %d: add_control_to_dock()..." % step)
+	add_control_to_dock(DOCK_SLOT_RIGHT_UR, _dock)
+	print("[PH Generator]   step %d: OK" % step)
+	step += 1
+
+	# Step 6: Register settings menu
 	add_tool_menu_item("PH Generator Settings", _open_settings)
-	print("[PH Generator] _enter_tree DONE")
+	print("[PH Generator]   step %d: tool menu registered" % step)
+
+	print("[PH Generator] _enter_tree() DONE — all %d steps passed" % step)
 
 
 func _exit_tree() -> void:

@@ -29,9 +29,11 @@ Thumbs.db
 __pycache__/
 *.pyc
 
-# Test / temp files
-test_*.gd
+# Test / temp files (local only)
+test_run.gd
+test_valid.gd
 opencode.jsonc
+*.log
 
 # Submission (generated per-user)
 AI测试-*/

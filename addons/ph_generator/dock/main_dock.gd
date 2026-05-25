@@ -22,48 +22,83 @@ var _merged_mode_box: CheckBox
 
 
 func setup(generator) -> void:
+	print("[PH Dock] setup() START")
 	_generator = generator
 	_config = generator.get_config()
-	_generator.status_update.connect(_on_status)
-	_generator.ph_generated.connect(_on_ph_generated)
-	_generator.ph_exported.connect(_on_exported)
+	print("[PH Dock] config loaded")
+
+	# Connect signals defensively
+	if _generator.has_signal("status_update"):
+		_generator.status_update.connect(_on_status)
+		print("[PH Dock] status_update connected")
+	else:
+		push_error("[PH Dock] generator missing signal: status_update")
+
+	if _generator.has_signal("ph_generated"):
+		_generator.ph_generated.connect(_on_ph_generated)
+		print("[PH Dock] ph_generated connected")
+	else:
+		push_error("[PH Dock] generator missing signal: ph_generated")
+
+	if _generator.has_signal("ph_exported"):
+		_generator.ph_exported.connect(_on_exported)
+		print("[PH Dock] ph_exported connected")
+	else:
+		push_error("[PH Dock] generator missing signal: ph_exported")
+
+	print("[PH Dock] calling _build_ui()...")
 	_build_ui()
+	print("[PH Dock] setup() DONE")
 
 
 func _build_ui() -> void:
+	print("[PH Dock] _build_ui() START")
 	custom_minimum_size = Vector2(300, 500)
 	size_flags_horizontal = SIZE_EXPAND_FILL
 	size_flags_vertical = SIZE_EXPAND_FILL
 
+	var widget_num := 0
+
+	_print_widget(widget_num, "ScrollContainer")
 	var scroll = ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.size_flags_horizontal = SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = SIZE_EXPAND_FILL
 	add_child(scroll)
+	widget_num += 1
 
+	_print_widget(widget_num, "VBoxContainer")
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 6)
 	vbox.size_flags_horizontal = SIZE_EXPAND_FILL
 	scroll.add_child(vbox)
+	widget_num += 1
 
+	_print_widget(widget_num, "Title Label")
 	var title = Label.new()
 	title.text = "PH Generator"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 16)
 	vbox.add_child(title)
+	widget_num += 1
 
+	_print_widget(widget_num, "Settings Button")
 	var settings_btn = Button.new()
 	settings_btn.text = "⚙ 设置 (API Key)"
 	settings_btn.pressed.connect(_open_settings)
 	settings_btn.size_flags_horizontal = SIZE_EXPAND_FILL
 	vbox.add_child(settings_btn)
+	widget_num += 1
 
 	vbox.add_child(_separator())
 
+	_print_widget(widget_num, "Preset Label")
 	var preset_label = Label.new()
 	preset_label.text = "快速模板:"
 	vbox.add_child(preset_label)
+	widget_num += 1
 
+	_print_widget(widget_num, "Preset Dropdown")
 	_preset_dropdown = OptionButton.new()
 	_preset_dropdown.size_flags_horizontal = SIZE_EXPAND_FILL
 	_preset_dropdown.add_item("-- 选择预设 --", 0)
@@ -71,20 +106,26 @@ func _build_ui() -> void:
 		_preset_dropdown.add_item(key)
 	_preset_dropdown.item_selected.connect(_on_preset_selected)
 	vbox.add_child(_preset_dropdown)
+	widget_num += 1
 
 	vbox.add_child(_separator())
 
+	_print_widget(widget_num, "Description Label")
 	var desc_label = Label.new()
 	desc_label.text = "物件描述 (自然语言):"
 	vbox.add_child(desc_label)
+	widget_num += 1
 
+	_print_widget(widget_num, "Description TextEdit")
 	_description_input = TextEdit.new()
 	_description_input.custom_minimum_size = Vector2(0, 60)
 	_description_input.placeholder_text = "例如: 轿车 (4×1.8×1.5)"
 	_description_input.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	_description_input.size_flags_horizontal = SIZE_EXPAND_FILL
 	vbox.add_child(_description_input)
+	widget_num += 1
 
+	_print_widget(widget_num, "Dimensions Row")
 	var dims_label = Label.new()
 	dims_label.text = "尺寸 (X=长, Y=高, Z=深):"
 	vbox.add_child(dims_label)
@@ -97,39 +138,51 @@ func _build_ui() -> void:
 	dims_row.add_child(_dim_h)
 	dims_row.add_child(_dim_d)
 	vbox.add_child(dims_row)
+	widget_num += 1
 
+	_print_widget(widget_num, "Auto-select CheckBox")
 	_auto_select_box = CheckBox.new()
 	_auto_select_box.text = "从选中节点读取尺寸"
 	_auto_select_box.button_pressed = _config.auto_select_whitebox
 	_auto_select_box.toggled.connect(_on_auto_select_toggled)
 	vbox.add_child(_auto_select_box)
+	widget_num += 1
 
+	_print_widget(widget_num, "Generate Button")
 	_generate_btn = Button.new()
 	_generate_btn.text = "AI 生成 PH"
 	_generate_btn.size_flags_horizontal = SIZE_EXPAND_FILL
 	_generate_btn.add_theme_color_override("font_color", Color(0.2, 1.0, 0.4))
 	_generate_btn.pressed.connect(_on_generate_pressed)
 	vbox.add_child(_generate_btn)
+	widget_num += 1
 
+	_print_widget(widget_num, "Merged Mode CheckBox")
 	_merged_mode_box = CheckBox.new()
 	_merged_mode_box.text = "合并模式 (单一体白模)"
 	_merged_mode_box.button_pressed = false
 	_merged_mode_box.toggled.connect(_on_merged_mode_toggled)
 	vbox.add_child(_merged_mode_box)
+	widget_num += 1
 
 	vbox.add_child(_separator())
 
+	_print_widget(widget_num, "JSON Label")
 	var json_label = Label.new()
 	json_label.text = "LLM 解析结果 (可编辑):"
 	vbox.add_child(json_label)
+	widget_num += 1
 
+	_print_widget(widget_num, "JSON TextEdit")
 	_json_display = TextEdit.new()
 	_json_display.custom_minimum_size = Vector2(0, 150)
 	_json_display.placeholder_text = "这里显示 AI 解析后的几何结构..."
 	_json_display.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	_json_display.size_flags_horizontal = SIZE_EXPAND_FILL
 	vbox.add_child(_json_display)
+	widget_num += 1
 
+	_print_widget(widget_num, "Export Buttons Row")
 	var export_row = HBoxContainer.new()
 	_export_glb_btn = Button.new()
 	_export_glb_btn.text = "导出 .glb"
@@ -142,17 +195,21 @@ func _build_ui() -> void:
 	_export_fbx_btn.disabled = true
 	_export_fbx_btn.pressed.connect(_on_export_fbx)
 	export_row.add_child(_export_fbx_btn)
-
 	vbox.add_child(export_row)
+	widget_num += 1
 
 	vbox.add_child(_separator())
 
+	_print_widget(widget_num, "Status RichTextLabel")
 	_status_label = RichTextLabel.new()
 	_status_label.custom_minimum_size = Vector2(0, 80)
 	_status_label.bbcode_enabled = true
 	_status_label.scroll_following = true
 	_status_label.size_flags_vertical = SIZE_EXPAND_FILL
 	vbox.add_child(_status_label)
+	widget_num += 1
+
+	print("[PH Dock] _build_ui() DONE — %d widgets created" % widget_num)
 
 
 func _make_spinbox(label: String, default_val: float, step_val: float, max_val: float):
@@ -178,6 +235,9 @@ func _separator() -> Control:
 	sep.custom_minimum_size = Vector2(0, 2)
 	return sep
 
+
+func _print_widget(num: int, name: String) -> void:
+	print("[PH Dock]   widget %d: %s" % [num, name])
 
 func _on_status(message: String) -> void:
 	_status_label.append_text("\n" + message)

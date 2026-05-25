@@ -1,0 +1,74 @@
+name: PH Generator CI
+
+on:
+  push:
+    branches: [main, master]
+    paths-ignore:
+      - "docs/**"
+      - "*.md"
+      - "AI测试-**"
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:  # Allow manual trigger from GitHub UI
+
+jobs:
+  validate-plugin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── Pre-flight: validate plugin without Godot ──────────────
+      - name: Pre-flight validation (Python)
+        run: python3 check_preflight.py
+
+      # ── Download Godot 4.6.2 Linux headless ────────────────────
+      - name: Download Godot 4.6.2
+        run: |
+          GODOT_VERSION="4.6.2-stable"
+          GODOT_URL="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          echo "Downloading Godot from $GODOT_URL"
+          curl -sSL -o godot.zip "$GODOT_URL"
+          unzip -o godot.zip
+          chmod +x Godot_v${GODOT_VERSION}_linux.x86_64
+          mv Godot_v${GODOT_VERSION}_linux.x86_64 godot_engine
+          ./godot_engine --version
+
+      # ── Test 1: Parse validation (all scripts load) ─────────────
+      - name: Test: Parse all scripts (check_all.gd)
+        run: |
+          ./godot_engine --headless --script res://check_all.gd --quit 2>&1 | tee check_all.log
+          grep -q "all OK" check_all.log && echo "check_all: PASS" || (echo "check_all: FAIL" && exit 1)
+
+      # ── Test 2: Comprehensive unit tests (test_full.gd) ─────────
+      - name: Test: Full unit test suite (test_full.gd)
+        run: |
+          ./godot_engine --headless --script res://test_full.gd --quit 2>&1 | tee test_full.log
+          grep -q "ALL PASSED" test_full.log && echo "test_full: PASS" || (echo "test_full: FAIL" && exit 1)
+
+      # ── Test 3: Headless editor mode plugin load ────────────────
+      - name: Test: Headless editor mode (test_editor_mode.gd)
+        run: |
+          ./godot_engine --editor --headless --script res://test_editor_mode.gd --quit 2>&1 | tee editor_mode.log
+          grep -q "ALL PASSED" editor_mode.log && echo "editor_mode: PASS" || (echo "editor_mode: FAIL" && exit 1)
+
+      # ── Test 4: Smoke test plugin checker ───────────────────────
+      - name: Test: Smoke test plugin validation
+        run: |
+          ./godot_engine --headless --script res://addons/ph_smoke_test/check_smoke.gd --quit 2>&1 | tee smoke_test.log
+          grep -q "ALL PASSED" smoke_test.log && echo "smoke_test: PASS" || (echo "smoke_test: FAIL" && exit 1)
+
+      # ── Upload logs on failure ──────────────────────────────────
+      - name: Upload test logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: |
+            check_all.log
+            test_full.log
+            editor_mode.log
+            smoke_test.log
+          retention-days: 7
