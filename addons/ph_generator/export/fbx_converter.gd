@@ -23,11 +23,12 @@ func convert_glb_to_fbx(glb_path: String) -> String:
 
 	var output = []
 	var exit_code = OS.execute(py_cmd, [script_path, glb_path, fbx_path], output, true)
+	var std_text = "".join(output).strip_edges()
 	if exit_code != 0:
-		var err = "".join(output)
-		push_error("FBX 转换失败 (exit " + str(exit_code) + "): " + err)
+		push_error("FBX 转换失败 (exit %d): %s" % [exit_code, std_text])
 		return ""
-
+	if "Warning" in std_text or "ERROR" in std_text:
+		push_warning(std_text)
 	return fbx_path
 
 
@@ -36,21 +37,19 @@ func is_python_available() -> bool:
 
 
 func _find_python() -> String:
-	var output = []
-	if OS.execute("python3", ["--version"], output, true) == 0:
-		return "python3"
-	if OS.execute("python", ["--version"], output, true) == 0:
-		return "python"
+	var candidates = ["py", "python", "python3"] if OS.get_name() == "Windows" else ["python3", "python"]
+	for cmd in candidates:
+		var output = []
+		var ec = OS.execute(cmd, ["--version"], output, true)
+		var ver = "".join(output).strip_edges()
+		if ec == 0 and "Python" in ver:
+			return cmd
 	return ""
 
 
 func _get_script_path() -> String:
-	var global_script = "res://addons/ph_generator/scripts/glb2fbx.py"
-	if FileAccess.file_exists(global_script):
-		return ProjectSettings.globalize_path(global_script)
-
-	var local_script = ProjectSettings.globalize_path("res://") + "addons/ph_generator/scripts/glb2fbx.py"
-	if FileAccess.file_exists(local_script):
-		return local_script
-
+	var script = "res://addons/ph_generator/scripts/glb2fbx.py"
+	if FileAccess.file_exists(script):
+		return ProjectSettings.globalize_path(script)
+	push_error("glb2fbx.py not found at: " + script)
 	return ""

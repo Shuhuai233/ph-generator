@@ -61,9 +61,11 @@ func request_generate(description: String, dimensions: Vector3) -> void:
 
 	if _llm_client == null:
 		_llm_client = LLMClient.new()
-	_llm_client.set_config(_config)
-	_llm_client.response_received.connect(_on_llm_response)
-	_llm_client.error_occurred.connect(_on_llm_error)
+		_llm_client.set_config(_config)
+		_llm_client.response_received.connect(_on_llm_response)
+		_llm_client.error_occurred.connect(_on_llm_error)
+		if not _llm_client.is_inside_tree():
+			_editor_plugin.get_editor_interface().get_base_control().add_child(_llm_client)
 	_llm_client.request_ph_json(description, dimensions)
 
 
@@ -106,7 +108,7 @@ func _build_and_place(parsed: Dictionary) -> void:
 	status_update.emit("PH 已生成到场景中: " + ph_node.name)
 
 
-func export_glb(ph_node: Node3D, file_name: String = "") -> String:
+func export_glb(ph_node: Node3D, file_name: String = "", force_fbx: bool = false) -> String:
 	if file_name.is_empty():
 		file_name = ph_node.name
 
@@ -120,7 +122,7 @@ func export_glb(ph_node: Node3D, file_name: String = "") -> String:
 	status_update.emit(".glb 导出成功: " + glb_path)
 
 	var fbx_path = ""
-	if _config.export_fbx:
+	if _config.export_fbx or force_fbx:
 		if _fbx_converter.is_python_available():
 			status_update.emit("开始转换 FBX...")
 			fbx_path = _fbx_converter.convert_glb_to_fbx(glb_path)

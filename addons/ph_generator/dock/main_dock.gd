@@ -314,10 +314,7 @@ func _on_export_glb() -> void:
 func _on_export_fbx() -> void:
 	if _current_ph_node == null:
 		return
-	var saved_fbx = _config.export_fbx
-	_config.export_fbx = true
-	_generator.export_glb(_current_ph_node)
-	_config.export_fbx = saved_fbx
+	_generator.export_glb(_current_ph_node, "", true)
 
 
 func _on_exported(glb_path: String, fbx_path: String) -> void:

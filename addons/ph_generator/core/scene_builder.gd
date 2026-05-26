@@ -43,13 +43,14 @@ func build_ph_root(parsed: Dictionary, scene_root: Node, ph_name: String = "PH_G
 	if coll:
 		root.add_child(coll)
 
+	scene_root.add_child(root)
+
 	root.owner = scene_root
 	for child in root.get_children():
 		child.owner = scene_root
 		for grandchild in child.get_children():
 			grandchild.owner = scene_root
 
-	scene_root.add_child(root)
 	return root
 
 
@@ -185,11 +186,12 @@ func build_ph_root_merged(parsed: Dictionary, scene_root: Node, ph_name: String 
 		sb.add_child(cs)
 		root.add_child(sb)
 
+	scene_root.add_child(root)
+
 	root.owner = scene_root
 	for child in root.get_children():
 		child.owner = scene_root
 		for grandchild in child.get_children():
 			grandchild.owner = scene_root
 
-	scene_root.add_child(root)
 	return root

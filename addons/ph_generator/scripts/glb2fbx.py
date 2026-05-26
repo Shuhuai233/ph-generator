@@ -9,6 +9,7 @@ import sys
 import os
 import subprocess
 import shutil
+import tempfile
 
 
 def convert_with_trimesh(src: str, dst: str) -> bool:
@@ -24,10 +25,24 @@ def convert_with_trimesh(src: str, dst: str) -> bool:
         return False
 
 
+def _find_assimp() -> str | None:
+    if shutil.which("assimp"):
+        return "assimp"
+    prog = os.environ.get("ProgramFiles", "C:\\Program Files")
+    candidates = [os.path.join(prog, "Assimp", "bin", "assimp.exe")]
+    for c in candidates:
+        if os.path.isfile(c):
+            return c
+    return None
+
+
 def convert_with_assimp(src: str, dst: str) -> bool:
+    assimp_cmd = _find_assimp()
+    if assimp_cmd is None:
+        return False
     try:
         result = subprocess.run(
-            ["assimp", "export", src, dst],
+            [assimp_cmd, "export", src, dst],
             capture_output=True, text=True, timeout=30
         )
         if result.returncode == 0:
@@ -41,24 +56,39 @@ def convert_with_assimp(src: str, dst: str) -> bool:
         return False
 
 
+def _find_blender() -> str | None:
+    if shutil.which("blender"):
+        return "blender"
+    prog = os.environ.get("ProgramFiles", "C:\\Program Files")
+    candidates = [os.path.join(prog, "Blender Foundation", "Blender", "blender.exe")]
+    for c in candidates:
+        if os.path.isfile(c):
+            return c
+    return None
+
+
 def convert_with_blender(src: str, dst: str) -> bool:
+    blender_cmd = _find_blender()
+    if blender_cmd is None:
+        return False
+
     blender_script = f'''
 import bpy, sys, os
-src = "{src}"
-dst = "{dst}"
+src = {repr(src)}
+dst = {repr(dst)}
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.delete(use_global=False)
 bpy.ops.import_scene.gltf(filepath=src)
 bpy.ops.export_scene.fbx(filepath=dst, use_selection=True)
 bpy.ops.wm.quit_blender()
 '''
-    script_path = "/tmp/glb2fbx_blender.py"
+    script_path = os.path.join(tempfile.gettempdir(), "glb2fbx_blender.py")
     with open(script_path, "w") as f:
         f.write(blender_script)
 
     try:
         result = subprocess.run(
-            ["blender", "--background", "--python", script_path],
+            [blender_cmd, "--background", "--python", script_path],
             capture_output=True, text=True, timeout=60
         )
         os.unlink(script_path)
@@ -78,14 +108,13 @@ bpy.ops.wm.quit_blender()
 
 
 def fallback_copy(src: str, dst: str) -> bool:
+    print("ERROR: No FBX converter available (not trimesh, not assimp, not Blender).")
+    print("Install one of: pip install trimesh, assimp CLI, or Blender.")
     try:
         shutil.copy2(src, dst)
-        print("Warning: No FBX converter available. Copied .glb as .fbx placeholder.")
-        print("Install one of: trimesh (pip install trimesh), assimp, or Blender.")
-        return True
     except Exception as e:
         print(f"Copy fallback failed: {e}")
-        return False
+    return False
 
 
 def main():
@@ -113,6 +142,7 @@ def main():
         return
 
     fallback_copy(src, dst)
+    sys.exit(1)
 
 
 if __name__ == "__main__":
