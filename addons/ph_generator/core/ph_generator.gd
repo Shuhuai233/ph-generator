@@ -185,8 +185,7 @@ static func _collect_aabb(node: Node, result: Array) -> void:
 				t * Vector3(child_aabb.end.x, child_aabb.end.y, child_aabb.end.z),
 			]
 			if not result[1]:
-				result[0].position = corners[0]
-				result[0].size = Vector3.ZERO
+				result[0] = AABB(corners[0], Vector3.ZERO)
 				result[1] = true
 			for corner in corners:
 				result[0] = result[0].expand(corner)

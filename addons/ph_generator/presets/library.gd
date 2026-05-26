@@ -195,8 +195,9 @@ static func _scale_preset(preset: Dictionary, target_dims: Vector3, _type_name: 
 
 
 static func _approx_bbox(primitives: Array) -> Vector3:
-	var minp = Vector3(INF, INF, INF)
-	var maxp = Vector3(-INF, -INF, -INF)
+	# Use large finite numbers instead of INF to avoid Windows GDScript parser bug
+	var minp = Vector3(1e10, 1e10, 1e10)
+	var maxp = Vector3(-1e10, -1e10, -1e10)
 	var has_any := false
 	for p in primitives:
 		if not p is Dictionary:
