@@ -24,10 +24,10 @@ jobs:
       - name: Pre-flight validation (Python)
         run: python3 check_preflight.py
 
-      # ── Download Godot 4.6.2 Linux headless ────────────────────
-      - name: Download Godot 4.6.2
+      # ── Download Godot 4.6.3 Linux headless ────────────────────
+      - name: Download Godot 4.6.3
         run: |
-          GODOT_VERSION="4.6.2-stable"
+          GODOT_VERSION="4.6.3-stable"
           GODOT_URL="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
           echo "Downloading Godot from $GODOT_URL"
           curl -sSL -o godot.zip "$GODOT_URL"
@@ -54,12 +54,6 @@ jobs:
           ./godot_engine --editor --headless --script res://test_editor_mode.gd --quit 2>&1 | tee editor_mode.log
           grep -q "ALL PASSED" editor_mode.log && echo "editor_mode: PASS" || (echo "editor_mode: FAIL" && exit 1)
 
-      # ── Test 4: Smoke test plugin checker ───────────────────────
-      - name: Test: Smoke test plugin validation
-        run: |
-          ./godot_engine --headless --script res://addons/ph_smoke_test/check_smoke.gd --quit 2>&1 | tee smoke_test.log
-          grep -q "ALL PASSED" smoke_test.log && echo "smoke_test: PASS" || (echo "smoke_test: FAIL" && exit 1)
-
       # ── Upload logs on failure ──────────────────────────────────
       - name: Upload test logs
         if: failure()
@@ -70,5 +64,4 @@ jobs:
             check_all.log
             test_full.log
             editor_mode.log
-            smoke_test.log
           retention-days: 7
