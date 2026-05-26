@@ -13,10 +13,9 @@ func set_config(cm) -> void:
 func build_ph_root(parsed: Dictionary, scene_root: Node, ph_name: String = "PH_Generated") -> Node3D:
 	var existing = scene_root.get_node_or_null(ph_name)
 	if existing:
-		for child in existing.get_children():
-			child.queue_free()
+		if existing.get_parent():
+			existing.get_parent().remove_child(existing)
 		existing.queue_free()
-		await Engine.get_main_loop().process_frame
 
 	var root = Node3D.new()
 	root.name = ph_name
@@ -45,11 +44,7 @@ func build_ph_root(parsed: Dictionary, scene_root: Node, ph_name: String = "PH_G
 
 	scene_root.add_child(root)
 
-	root.owner = scene_root
-	for child in root.get_children():
-		child.owner = scene_root
-		for grandchild in child.get_children():
-			grandchild.owner = scene_root
+	root.propagate_call("set_owner", [scene_root])
 
 	return root
 
@@ -132,10 +127,9 @@ func _create_collision_body(parsed: Dictionary) -> StaticBody3D:
 func build_ph_root_merged(parsed: Dictionary, scene_root: Node, ph_name: String = "PH_Generated") -> Node3D:
 	var existing = scene_root.get_node_or_null(ph_name)
 	if existing:
-		for child in existing.get_children():
-			child.queue_free()
+		if existing.get_parent():
+			existing.get_parent().remove_child(existing)
 		existing.queue_free()
-		await Engine.get_main_loop().process_frame
 
 	var root = Node3D.new()
 	root.name = ph_name
@@ -188,10 +182,6 @@ func build_ph_root_merged(parsed: Dictionary, scene_root: Node, ph_name: String 
 
 	scene_root.add_child(root)
 
-	root.owner = scene_root
-	for child in root.get_children():
-		child.owner = scene_root
-		for grandchild in child.get_children():
-			grandchild.owner = scene_root
+	root.propagate_call("set_owner", [scene_root])
 
 	return root
