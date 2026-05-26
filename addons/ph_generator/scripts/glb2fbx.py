@@ -110,10 +110,6 @@ bpy.ops.wm.quit_blender()
 def fallback_copy(src: str, dst: str) -> bool:
     print("ERROR: No FBX converter available (not trimesh, not assimp, not Blender).")
     print("Install one of: pip install trimesh, assimp CLI, or Blender.")
-    try:
-        shutil.copy2(src, dst)
-    except Exception as e:
-        print(f"Copy fallback failed: {e}")
     return False
 
 

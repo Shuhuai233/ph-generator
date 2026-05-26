@@ -40,3 +40,15 @@ AI测试-*/
 test_parse_check.gd
 test_parse_one.gd
 debug.log
+test_brute_force.gd
+test_cfg_parse.gd
+test_minimal_plugin.gd
+test_parse_chain.gd
+test_plugin_chain.gd
+test_plugin_step0.gd
+test_plugin_step1.gd
+test_plugin_step2.gd
+test_syntax_features.gd
+test_targeted.gd
+test_parse_check.gd
+test_parse_one.gd
