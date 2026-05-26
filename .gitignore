@@ -39,3 +39,4 @@ opencode.jsonc
 AI测试-*/
 test_parse_check.gd
 test_parse_one.gd
+debug.log

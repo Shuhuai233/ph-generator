@@ -53,25 +53,21 @@ func setup(generator) -> void:
 
 func _build_ui() -> void:
 	print("[PH Dock] _build_ui() START")
-	custom_minimum_size = Vector2(300, 500)
+	custom_minimum_size = Vector2(320, 500)
 	size_flags_horizontal = SIZE_EXPAND_FILL
 	size_flags_vertical = SIZE_EXPAND_FILL
 
 	var widget_num := 0
 
-	_print_widget(widget_num, "ScrollContainer")
-	var scroll = ScrollContainer.new()
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.size_flags_horizontal = SIZE_EXPAND_FILL
-	scroll.size_flags_vertical = SIZE_EXPAND_FILL
-	add_child(scroll)
-	widget_num += 1
-
+	# Direct VBoxContainer (no ScrollContainer — avoids zero-height issues)
 	_print_widget(widget_num, "VBoxContainer")
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 6)
+	vbox.add_theme_constant_override("separation", 4)
 	vbox.size_flags_horizontal = SIZE_EXPAND_FILL
-	scroll.add_child(vbox)
+	vbox.size_flags_vertical = SIZE_EXPAND_FILL
+	vbox.anchor_right = 1.0
+	vbox.anchor_bottom = 1.0
+	add_child(vbox)
 	widget_num += 1
 
 	_print_widget(widget_num, "Title Label")
