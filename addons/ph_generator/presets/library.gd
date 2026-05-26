@@ -86,6 +86,23 @@ const PRESETS = {
 			{"type": "box", "size": [0.08, 0.7, 0.08], "position": [-0.65, 0.35, -0.3], "color": "#7a5535", "material": "wood"}
 		]
 	},
+	"门框": {
+		"description": "门框",
+		"primitives": [
+			{"type": "box", "size": [0.1, 2.4, 0.15], "position": [-0.45, 1.2, 0], "color": "#7a5535", "material": "wood"},
+			{"type": "box", "size": [0.1, 2.4, 0.15], "position": [0.45, 1.2, 0], "color": "#7a5535", "material": "wood"},
+			{"type": "box", "size": [1.0, 0.1, 0.15], "position": [0, 2.35, 0], "color": "#7a5535", "material": "wood"},
+			{"type": "box", "size": [1.0, 0.1, 0.15], "position": [0, 0.05, 0], "color": "#7a5535", "material": "wood"}
+		]
+	},
+	"圆桶": {
+		"description": "圆桶",
+		"primitives": [
+			{"type": "cylinder", "radius": 0.35, "height": 0.4, "position": [0, 0.3, 0], "color": "#8c613d", "material": "wood"},
+			{"type": "cylinder", "radius": 0.4, "height": 0.3, "position": [0, 0.7, 0], "color": "#8c613d", "material": "wood"},
+			{"type": "cylinder", "radius": 0.35, "height": 0.3, "position": [0, 1.0, 0], "color": "#8c613d", "material": "wood"}
+		]
+	},
 	"椅": {
 		"description": "椅子",
 		"primitives": [
@@ -110,6 +127,8 @@ const KEYWORDS = {
 	"沙发": ["沙发", "sofa", "couch", "seat", "座椅", "椅子"],
 	"桌": ["桌", "桌子", "table", "desk", "台"],
 	"椅": ["椅", "凳子", "chair", "stool", "凳"],
+	"门框": ["门框", "门架", "doorframe", "frame", "框", "门框结构"],
+	"圆桶": ["桶", "圆桶", "木桶", "barrel", "罐", "桶子", "油桶"],
 }
 
 
@@ -176,7 +195,9 @@ static func _scale_preset(preset: Dictionary, target_dims: Vector3, _type_name: 
 
 
 static func _approx_bbox(primitives: Array) -> Vector3:
-	var maxp = Vector3.ONE * 0.001
+	var minp = Vector3(INF, INF, INF)
+	var maxp = Vector3(-INF, -INF, -INF)
+	var has_any := false
 	for p in primitives:
 		if not p is Dictionary:
 			continue
@@ -184,9 +205,14 @@ static func _approx_bbox(primitives: Array) -> Vector3:
 		var pos = Vector3.ZERO
 		if p.has("position"):
 			pos = _to_v3(p["position"])
-		var corner = pos.abs() + s * 0.5
-		maxp = Vector3(max(maxp.x, corner.x * 2), max(maxp.y, corner.y * 2), max(maxp.z, corner.z * 2))
-	return maxp
+		var lo = pos - s * 0.5
+		var hi = pos + s * 0.5
+		minp = Vector3(min(minp.x, lo.x), min(minp.y, lo.y), min(minp.z, lo.z))
+		maxp = Vector3(max(maxp.x, hi.x), max(maxp.y, hi.y), max(maxp.z, hi.z))
+		has_any = true
+	if not has_any:
+		return Vector3(1, 1, 1)
+	return maxp - minp
 
 
 static func _get_size(p: Dictionary) -> Vector3:

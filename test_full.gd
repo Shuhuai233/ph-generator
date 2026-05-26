@@ -7,6 +7,9 @@ const MaterialDB = preload("res://addons/ph_generator/core/material_db.gd")
 const ConfigManager = preload("res://addons/ph_generator/config/config_manager.gd")
 
 
+const PHGenerator = preload("res://addons/ph_generator/core/ph_generator.gd")
+
+
 var all_ok: bool = true
 var test_num: int = 0
 var passed: int = 0
@@ -319,6 +322,71 @@ func _initialize() -> void:
 
 	_test("preload - config_manager resolves", func():
 		return ConfigManager != null)
+
+	# ── SECTION 7: get_node_extents (ph_generator) ─────────────────────
+	_test("get_node_extents - single mesh at origin", func():
+		var node := Node3D.new()
+		var mi := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(2, 3, 4)
+		mi.mesh = box
+		node.add_child(mi)
+		var extents = PHGenerator.get_node_extents(node)
+		print("        extents=" + str(extents))
+		return is_equal_approx(extents.x, 2.0) and is_equal_approx(extents.y, 3.0) and is_equal_approx(extents.z, 4.0))
+
+	_test("get_node_extents - two boxes at different positions", func():
+		var node := Node3D.new()
+		var mi1 := MeshInstance3D.new()
+		var box1 := BoxMesh.new()
+		box1.size = Vector3(1, 1, 1)
+		mi1.mesh = box1
+		mi1.position = Vector3(2, 0, 0)
+		node.add_child(mi1)
+
+		var mi2 := MeshInstance3D.new()
+		var box2 := BoxMesh.new()
+		box2.size = Vector3(1, 1, 1)
+		mi2.mesh = box2
+		mi2.position = Vector3(-2, 0, 0)
+		node.add_child(mi2)
+
+		var extents = PHGenerator.get_node_extents(node)
+		print("        extents=" + str(extents))
+		# X spans from -2.5 to 2.5 = 5.0
+		return abs(extents.x - 5.0) < 0.001 and abs(extents.y - 1.0) < 0.001 and abs(extents.z - 1.0) < 0.001)
+
+	_test("get_node_extents - positioned and rotated mesh", func():
+		var node := Node3D.new()
+		var mi := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(2, 1, 1)
+		mi.mesh = box
+		mi.position = Vector3(1, 2, 3)
+		node.add_child(mi)
+		var extents = PHGenerator.get_node_extents(node)
+		print("        extents=" + str(extents))
+		return is_equal_approx(extents.x, 2.0) and is_equal_approx(extents.y, 1.0) and is_equal_approx(extents.z, 1.0))
+
+	_test("get_node_extents - empty node returns default", func():
+		var node := Node3D.new()
+		var extents = PHGenerator.get_node_extents(node)
+		print("        extents=" + str(extents))
+		return is_equal_approx(extents.x, 1.0) and is_equal_approx(extents.y, 1.0) and is_equal_approx(extents.z, 1.0))
+
+	_test("get_node_extents - three boxes forming L-shape", func():
+		var node := Node3D.new()
+		for pos in [Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 1, 0)]:
+			var mi := MeshInstance3D.new()
+			var box := BoxMesh.new()
+			box.size = Vector3(1, 1, 1)
+			mi.mesh = box
+			mi.position = pos
+			node.add_child(mi)
+		var extents = PHGenerator.get_node_extents(node)
+		print("        extents=" + str(extents))
+		# X: from -0.5 to 1.5 = 2.0, Y: from -0.5 to 1.5 = 2.0
+		return abs(extents.x - 2.0) < 0.001 and abs(extents.y - 2.0) < 0.001 and abs(extents.z - 1.0) < 0.001)
 
 	# ── RESULTS ────────────────────────────────────────────────────────
 	print("\n======================================================================")

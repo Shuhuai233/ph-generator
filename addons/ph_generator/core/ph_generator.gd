@@ -157,11 +157,37 @@ func get_selected_node_bbox() -> Dictionary:
 
 
 static func get_node_extents(node: Node3D) -> Vector3:
-	var max_point = Vector3.ZERO
-	var min_point = Vector3.ZERO
+	if node.get_child_count() == 0:
+		return Vector3(1, 1, 1)
+	# Use Array to pass AABB by reference (built-in types are value types in GDScript)
+	var aabb := AABB()
+	var result: Array = [aabb, false]  # [AABB, has_any]
+	_collect_aabb(node, result)
+	if not result[1]:
+		return Vector3(1, 1, 1)
+	return result[0].size
+
+
+static func _collect_aabb(node: Node, result: Array) -> void:
 	for child in node.get_children():
 		if child is MeshInstance3D and child.mesh:
-			var aabb = child.mesh.get_aabb()
-			max_point = max_point.max(aabb.position + aabb.size * child.scale)
-			min_point = min_point.min(aabb.position * child.scale)
-	return (max_point - min_point).abs()
+			var child_aabb: AABB = child.mesh.get_aabb()
+			var t: Transform3D = child.transform
+			# Transform all 8 corners through the child's full transform
+			var corners: Array[Vector3] = [
+				t * Vector3(child_aabb.position.x, child_aabb.position.y, child_aabb.position.z),
+				t * Vector3(child_aabb.end.x, child_aabb.position.y, child_aabb.position.z),
+				t * Vector3(child_aabb.position.x, child_aabb.end.y, child_aabb.position.z),
+				t * Vector3(child_aabb.position.x, child_aabb.position.y, child_aabb.end.z),
+				t * Vector3(child_aabb.end.x, child_aabb.end.y, child_aabb.position.z),
+				t * Vector3(child_aabb.end.x, child_aabb.position.y, child_aabb.end.z),
+				t * Vector3(child_aabb.position.x, child_aabb.end.y, child_aabb.end.z),
+				t * Vector3(child_aabb.end.x, child_aabb.end.y, child_aabb.end.z),
+			]
+			if not result[1]:
+				result[0].position = corners[0]
+				result[0].size = Vector3.ZERO
+				result[1] = true
+			for corner in corners:
+				result[0] = result[0].expand(corner)
+		_collect_aabb(child, result)
